@@ -1,3 +1,115 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Debt Freedom Tracker</title>
+  <style>
+    /* Fixed the theme variables so it won't be a blank page anymore! */
+    :root {
+      --font-sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      --color-background-primary: #FFFFFF;
+      --color-background-secondary: #F8F9FA;
+      --color-border-secondary: #E2E8F0;
+      --color-border-tertiary: #EDF2F7;
+      --color-text-primary: #1A202C;
+      --color-text-secondary: #4A5568;
+      --color-text-tertiary: #718096;
+      --color-text-danger: #E53E3E;
+      --border-radius-md: 8px;
+      --border-radius-lg: 12px;
+    }
+
+    *{box-sizing:border-box;margin:0;padding:0}
+    body{font-family:var(--font-sans);background:#F7FAFC;color:var(--color-text-primary);padding:20px}
+    .app{width:100%;max-width:800px;margin:0 auto;padding:0.5rem 0}
+    .top-banner{background:#1C1C2E;border-radius:var(--border-radius-lg);padding:1rem 1.25rem;margin-bottom:1rem;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px}
+    .top-banner h1{color:#fff;font-size:15px;font-weight:500}
+    .banner-stats{display:flex;gap:12px;flex-wrap:wrap}
+    .bstat{background:rgba(255,255,255,0.08);border-radius:var(--border-radius-md);padding:6px 12px;text-align:center}
+    .bstat .val{color:#F39C12;font-size:16px;font-weight:500}
+    .bstat .lbl{color:rgba(255,255,255,0.5);font-size:10px;margin-top:1px}
+    .tab-bar{display:flex;gap:4px;flex-wrap:wrap;margin-bottom:1rem;overflow-x:auto;padding-bottom:2px}
+    .tab-btn{padding:6px 14px;border-radius:var(--border-radius-md);border:0.5px solid var(--color-border-secondary);background:var(--color-background-primary);color:var(--color-text-secondary);font-size:12px;cursor:pointer;white-space:nowrap;transition:all .15s}
+    .tab-btn.active{background:#1C1C2E;color:#fff;border-color:#1C1C2E}
+    .tab-btn.red{border-left:3px solid #C0392B}
+    .tab-btn.orange{border-left:3px solid #E67E22}
+    .tab-btn.yellow{border-left:3px solid #F1C40F}
+    .tab-btn.green{border-left:3px solid #27AE60}
+    .tab-btn.teal{border-left:3px solid #1ABC9C}
+    .month-card{background:var(--color-background-primary);border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-lg);padding:1.25rem;box-shadow: 0 1px 3px rgba(0,0,0,0.05)}
+    .month-header{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:1rem;flex-wrap:wrap;gap:8px}
+    .month-title{font-size:18px;font-weight:500;color:var(--color-text-primary)}
+    .month-quote{font-size:12px;color:var(--color-text-secondary);font-style:italic;margin-top:4px;max-width:400px}
+    .status-badge{padding:5px 14px;border-radius:99px;font-size:11px;font-weight:500;white-space:nowrap}
+    .progress-section{margin-bottom:1.25rem}
+    .progress-label{display:flex;justify-content:space-between;margin-bottom:6px}
+    .progress-label span{font-size:12px;color:var(--color-text-secondary)}
+    .progress-label strong{font-size:12px;font-weight:500;color:var(--color-text-primary)}
+    .progress-bar-track{height:10px;background:var(--color-background-secondary);border-radius:99px;overflow:hidden}
+    .progress-bar-fill{height:100%;border-radius:99px;transition:width .4s ease}
+    .cutoffs{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:1.25rem}
+    @media(max-width:520px){.cutoffs{grid-template-columns:1fr}}
+    .cutoff-card{background:var(--color-background-secondary);border-radius:var(--border-radius-md);padding:1rem;border:0.5px solid var(--color-border-tertiary)}
+    .cutoff-title{font-size:11px;font-weight:500;color:var(--color-text-secondary);margin-bottom:10px;display:flex;justify-content:space-between}
+    .cutoff-budget{font-size:11px;color:var(--color-text-tertiary)}
+    .expense-row{display:flex;justify-content:space-between;align-items:center;padding:5px 0;border-bottom:0.5px solid var(--color-border-tertiary)}
+    .expense-row:last-child{border-bottom:none}
+    .exp-name{font-size:12px;color:var(--color-text-primary)}
+    .exp-amount{font-size:12px;font-weight:500;color:var(--color-text-secondary)}
+    .input-row{display:flex;align-items:center;gap:8px;margin-top:8px;padding-top:8px;border-top:0.5px solid var(--color-border-secondary)}
+    .input-row label{font-size:11px;color:var(--color-text-secondary);flex-shrink:0}
+    .input-row input{flex:1;padding:5px 8px;font-size:12px;border:0.5px solid var(--color-border-secondary);border-radius:var(--border-radius-md);background:var(--color-background-primary);color:var(--color-text-primary);min-width:0}
+    .pay-btn{padding:5px 10px;font-size:11px;border-radius:var(--border-radius-md);border:0.5px solid var(--color-border-secondary);background:var(--color-background-primary);color:var(--color-text-primary);cursor:pointer;white-space:nowrap}
+    .pay-btn:hover{background:var(--color-background-secondary)}
+    .paid-tag{font-size:10px;padding:2px 7px;border-radius:99px;background:#EAFAF1;color:#27AE60;font-weight:500;white-space:nowrap}
+    .cutoff-total{display:flex;justify-content:space-between;margin-top:8px;padding-top:8px;border-top:0.5px solid var(--color-border-secondary);font-size:12px}
+    .cutoff-remaining{font-size:11px;margin-top:4px;text-align:right}
+    .summary-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:10px;margin-bottom:1.25rem}
+    .scard{background:var(--color-background-secondary);border-radius:var(--border-radius-md);padding:10px 12px}
+    .scard .sv{font-size:18px;font-weight:500;color:var(--color-text-primary)}
+    .scard .sl{font-size:10px;color:var(--color-text-secondary);margin-top:2px}
+    .big-green{background:#EAFAF1;border-radius:var(--border-radius-lg);padding:1.5rem;text-align:center;margin-bottom:1.25rem}
+    .big-green h2{font-size:22px;font-weight:500;color:#27AE60}
+    .big-green p{font-size:13px;color:#1D6A39;margin-top:6px}
+    .savings-row{display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:0.5px solid var(--color-border-tertiary)}
+    .savings-row:last-child{border-bottom:none}
+    .sav-cat{display:flex;align-items:center;gap:8px;font-size:13px;color:var(--color-text-primary)}
+    .sav-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0}
+    .sav-amount{font-size:13px;font-weight:500;color:var(--color-text-secondary)}
+    .sav-input-wrap{display:flex;align-items:center;gap:6px}
+    .sav-input{width:90px;padding:4px 8px;font-size:12px;border:0.5px solid var(--color-border-secondary);border-radius:var(--border-radius-md);background:var(--color-background-primary);color:var(--color-text-primary);text-align:right}
+    .net-row{margin-top:10px;padding-top:10px;border-top:0.5px solid var(--color-border-secondary);display:flex;justify-content:space-between;align-items:center}
+    .net-row .lbl{font-size:12px;color:var(--color-text-secondary)}
+    .net-row .val{font-size:16px;font-weight:500}
+    .timeline-strip{display:flex;gap:0;margin-bottom:1rem;border-radius:var(--border-radius-md);overflow:hidden;height:32px}
+    .tl-seg{flex:1;display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:500;color:#fff;cursor:pointer;transition:opacity .15s}
+    .tl-seg:hover{opacity:0.8}
+    .section-lbl{font-size:11px;font-weight:500;color:var(--color-text-secondary);margin-bottom:8px;margin-top:1rem;text-transform:uppercase;letter-spacing:0.04em}
+    .overall-bar-wrap{margin-bottom:1.25rem}
+  </style>
+</head>
+<body>
+
+<div class="app">
+  <div class="top-banner">
+    <div>
+      <h1>Debt Freedom Tracker &nbsp;·&nbsp; 2026–2027</h1>
+      <div style="font-size:11px;color:rgba(255,255,255,0.45);margin-top:3px Warmly,">"One cutoff at a time."</div>
+    </div>
+    <div class="banner-stats">
+      <div class="bstat"><div class="val" id="b-total-paid">₱0</div><div class="lbl">Total paid</div></div>
+      <div class="bstat"><div class="val" id="b-remaining">₱120,000</div><div class="lbl">Remaining</div></div>
+      <div class="bstat"><div class="val" id="b-pct">0%</div><div class="lbl">Progress</div></div>
+      <div class="bstat"><div class="val" id="b-savings">₱0</div><div class="lbl">2027 savings</div></div>
+    </div>
+  </div>
+
+  <div class="timeline-strip" id="tl-strip"></div>
+  <div class="tab-bar" id="tab-bar"></div>
+  <div id="tab-content"></div>
+</div>
+
 <script>
 const TOTAL_DEBT = 120000;
 const INCOME = 20000;
@@ -126,7 +238,6 @@ const MONTHS_2027 = [
 
 const ALL_MONTHS = [...MONTHS_DEBT, ...MONTHS_2027];
 
-// Load from localStorage or create fresh state
 let state = {
   active: 'jun26',
   payments: {},
@@ -140,11 +251,10 @@ function initOrCreateState() {
       state = JSON.parse(saved);
       return;
     } catch(e) {
-      console.error("Error loading saved data, resetting...", e);
+      console.error("Error loading data:", e);
     }
   }
   
-  // Default structure if no saved data exists
   ALL_MONTHS.forEach(m => {
     if(m.phase === 'debt' || m.phase === 'debtfree'){
       state.payments[m.id] = {};
@@ -413,7 +523,8 @@ function render(){
   updateBanner();
 }
 
-// Fire storage check before rendering
 initOrCreateState();
 render();
 </script>
+</body>
+</html>
